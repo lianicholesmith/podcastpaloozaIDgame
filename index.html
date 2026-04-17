@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Identity Economics Experiment</title>
+  <style>
+    :root {
+      --green: #00FF40;
+      --purple: #EB00FF;
+      --white: #ffffff;
+      --black: #111111;
+      --gray: #666666;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--white);
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100vh;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .centered {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .intro {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .intro h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .intro p {
+      max-width: 560px;
+      font-size: 1.05rem;
+      line-height: 1.5;
+      color: #444;
+      margin-bottom: 28px;
+    }
+
+    .start-btn,
+    .round-btn,
+    .restart-btn,
+    .choice-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 16px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      appearance: none;
+      touch-action: manipulation;
+    }
+
+    .start-btn {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .question-screen {
+      background: var(--white);
+      color: var(--black);
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .progress {
+      font-size: 0.95rem;
+      color: var(--gray);
+      margin-bottom: 18px;
+    }
+
+    .question-text {
+      max-width: 760px;
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+      font-weight: bold;
+      line-height: 1.2;
+      margin-bottom: 28px;
+    }
+
+    .choices {
+      width: 100%;
+      max-width: 560px;
+      display: grid;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .choice-btn {
+      border-radius: 28px;
+      padding: 24px 20px;
+      font-size: 1.2rem;
+      line-height: 1.3;
+      color: var(--white);
+      transition: transform 0.08s ease;
+      width: 100%;
+      pointer-events: auto;
+    }
+
+    .choice-btn:active {
+      transform: scale(0.985);
+    }
+
+    .green-btn {
+      background: var(--green);
+      color: #000;
+    }
+
+    .purple-btn {
+      background: var(--purple);
+      color: #fff;
+    }
+
+    .feedback-screen {
+      position: relative;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .round-btn {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.18);
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.35);
+      backdrop-filter: blur(4px);
+      min-width: 170px;
+    }
+
+    .green-bg {
+      background: var(--green);
+      color: #000;
+    }
+
+    .purple-bg {
+      background: var(--purple);
+      color: #fff;
+    }
+
+    .green-bg .round-btn,
+    .green-bg .restart-btn {
+      color: #000;
+      border-color: rgba(0,0,0,0.25);
+      background: rgba(255,255,255,0.28);
+    }
+
+    .blackout-screen {
+      background: #000000;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #countdownNumber {
+      font-size: clamp(6rem, 20vw, 10rem);
+      font-weight: bold;
+      color: #ffffff;
+      animation: pulse 1s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%   { transform: scale(1.4); opacity: 0; }
+      30%  { transform: scale(1.0); opacity: 1; }
+      80%  { transform: scale(1.0); opacity: 1; }
+      100% { transform: scale(0.8); opacity: 0; }
+    }
+
+    .final-screen {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 28px;
+      color: var(--white);
+    }
+
+    .final-line-1 {
+      font-size: clamp(1rem, 3vw, 1.35rem);
+      opacity: 0.9;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .final-line-2 {
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: bold;
+      line-height: 1.15;
+      max-width: 780px;
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <!-- Intro screen -->
+  <section id="introScreen" class="screen active centered intro">
+    <h1>Identity Economics Experiment</h1>
+    <p>
+      You'll answer 5 questions by choosing green or purple.
+      Keep your brightness up, and wait for my cue before advancing.
+    </p>
+    <button id="startBtn" class="start-btn" type="button">Begin</button>
+  </section>
+
+  <!-- Question screen -->
+  <section id="questionScreen" class="screen question-screen">
+    <div class="progress" id="progressText"></div>
+    <div class="question-text" id="questionText"></div>
+    <div class="choices">
+      <button id="greenChoice" class="choice-btn green-btn" type="button"></button>
+      <button id="purpleChoice" class="choice-btn purple-btn" type="button"></button>
+    </div>
+  </section>
+
+  <!-- Feedback screen (questions 1–4) -->
+  <section id="feedbackScreen" class="screen feedback-screen">
+    <button id="roundBtn" class="round-btn" type="button"></button>
+  </section>
+
+  <!-- Blackout + countdown screen -->
+  <section id="blackoutScreen" class="screen blackout-screen">
+    <div id="countdownNumber"></div>
+  </section>
+
+  <!-- Final reveal screen -->
+  <section id="finalScreen" class="screen final-screen">
+    <div class="final-line-1">Your Identity</div>
+    <div class="final-line-2" id="finalRevealText"></div>
+
+  </section>
+
+  <script>
+    const questions = [
+      {
+        question: "Technology should be…",
+        greenText: "Seamless and effortless",
+        purpleText: "Flexible and adjustable"
+      },
+      {
+        question: "On video calls, you prefer…",
+        greenText: "A real or blurred background",
+        purpleText: "Virtual backgrounds or filters"
+      },
+      {
+        question: "You work best when things are…",
+        greenText: "Predictable",
+        purpleText: "Adaptable"
+      },
+      {
+        question: "Your ideal workspace feels…",
+        greenText: "Clean and minimal",
+        purpleText: "Functional and personalized"
+      },
+      {
+        question: "What matters most?",
+        greenText: "Simplicity and ease",
+        purpleText: "Choice and flexibility"
+      }
+    ];
+
+    const roundLabels = ["Round 2", "Round 3", "Round 4", "Final Round"];
+
+    let currentQuestion = 0;
+    let greenScore = 0;
+    let purpleScore = 0;
+    let lastAnswer = null;
+    let wakeLock = null;
+    let answerLocked = false;
+
+    const introScreen = document.getElementById("introScreen");
+    const questionScreen = document.getElementById("questionScreen");
+    const feedbackScreen = document.getElementById("feedbackScreen");
+    const blackoutScreen = document.getElementById("blackoutScreen");
+    const finalScreen = document.getElementById("finalScreen");
+    const startBtn = document.getElementById("startBtn");
+    const greenChoice = document.getElementById("greenChoice");
+    const purpleChoice = document.getElementById("purpleChoice");
+    const roundBtn = document.getElementById("roundBtn");
+    const progressText = document.getElementById("progressText");
+    const questionText = document.getElementById("questionText");
+    const finalRevealText = document.getElementById("finalRevealText");
+    const countdownNumber = document.getElementById("countdownNumber");
+
+    async function requestWakeLock() {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLock = await navigator.wakeLock.request("screen");
+        }
+      } catch (err) {
+        console.log(`Wake lock error: ${err.name}, ${err.message}`);
+      }
+    }
+
+    document.addEventListener("visibilitychange", async () => {
+      if (wakeLock !== null && document.visibilityState === "visible") {
+        await requestWakeLock();
+      }
+    });
+
+    function showScreen(screenToShow) {
+      [introScreen, questionScreen, feedbackScreen, blackoutScreen, finalScreen].forEach(s => {
+        s.classList.remove("active");
+      });
+      screenToShow.classList.add("active");
+    }
+
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      progressText.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+      questionText.textContent = q.question;
+      greenChoice.textContent = q.greenText;
+      purpleChoice.textContent = q.purpleText;
+      answerLocked = false;
+    }
+
+    async function startExperiment() {
+      currentQuestion = 0;
+      greenScore = 0;
+      purpleScore = 0;
+      lastAnswer = null;
+      answerLocked = false;
+      await requestWakeLock();
+      loadQuestion();
+      showScreen(questionScreen);
+    }
+
+    function selectAnswer(color) {
+      if (answerLocked) return;
+      answerLocked = true;
+      lastAnswer = color;
+      if (color === "green") greenScore++;
+      else purpleScore++;
+
+      if (currentQuestion === questions.length - 1) {
+        showBlackoutCountdown();
+      } else {
+        showFeedback(color === "green" ? "green-bg" : "purple-bg");
+      }
+    }
+
+    function showFeedback(bgClass) {
+      feedbackScreen.className = `screen feedback-screen active ${bgClass}`;
+      roundBtn.style.display = "block";
+      roundBtn.textContent = roundLabels[currentQuestion];
+      showScreen(feedbackScreen);
+    }
+
+    function nextQuestion() {
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+        showScreen(questionScreen);
+      }
+    }
+
+    function showBlackoutCountdown() {
+      showScreen(blackoutScreen);
+      let count = 3;
+
+      function tick() {
+        countdownNumber.textContent = count;
+        countdownNumber.style.animation = "none";
+        countdownNumber.offsetHeight; // trigger reflow to restart animation
+        countdownNumber.style.animation = "pulse 1s ease-in-out forwards";
+
+        if (count === 1) {
+          setTimeout(showFinalResult, 1000);
+        } else {
+          count--;
+          setTimeout(tick, 1000);
+        }
+      }
+
+      tick();
+    }
+
+    function showFinalResult() {
+      let winner;
+      if (greenScore > purpleScore) winner = "green";
+      else if (purpleScore > greenScore) winner = "purple";
+      else winner = lastAnswer;
+
+      let bgClass, revealText;
+      if (winner === "green") {
+        bgClass = "green-bg";
+        revealText = "You move like an APPLE user";
+      } else {
+        bgClass = "purple-bg";
+        revealText = "You move like an ANDROID user";
+      }
+
+      finalScreen.className = `screen final-screen active ${bgClass}`;
+      finalRevealText.textContent = revealText;
+      showScreen(finalScreen);
+    }
+
+    startBtn.addEventListener("click", startExperiment);
+    greenChoice.addEventListener("click", () => selectAnswer("green"));
+    purpleChoice.addEventListener("click", () => selectAnswer("purple"));
+    roundBtn.addEventListener("click", nextQuestion);
+
+    showScreen(introScreen);
+  </script>
+
+</body>
+</html>
