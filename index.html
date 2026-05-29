@@ -78,7 +78,6 @@
 
     .start-btn,
     .round-btn,
-    .restart-btn,
     .choice-btn {
       border: none;
       border-radius: 999px;
@@ -188,8 +187,7 @@
       color: #fff;
     }
 
-    .green-bg .round-btn,
-    .green-bg .restart-btn {
+    .green-bg .round-btn {
       color: #000;
       border-color: rgba(0,0,0,0.25);
       background: rgba(255,255,255,0.36);
@@ -239,18 +237,10 @@
     }
 
     .final-line-2 {
-      font-size: clamp(2rem, 6vw, 4rem);
+      font-size: clamp(2.5rem, 7vw, 5rem);
       font-weight: bold;
       line-height: 1.15;
       max-width: 780px;
-    }
-
-    .restart-btn {
-      margin-top: 28px;
-      background: rgba(255,255,255,0.18);
-      color: var(--white);
-      border: 1px solid rgba(255,255,255,0.35);
-      backdrop-filter: blur(4px);
     }
 
     @supports (padding: env(safe-area-inset-bottom)) {
@@ -292,7 +282,6 @@
   <section id="finalScreen" class="screen final-screen">
     <div class="final-line-1">Result</div>
     <div class="final-line-2" id="finalRevealText"></div>
-    <button id="restartBtn" class="restart-btn" type="button">Start Over</button>
   </section>
 
   <script>
@@ -484,11 +473,6 @@
       finalScreen.className = `screen final-screen active ${bgClass}`;
       finalRevealText.textContent = revealText;
       showScreen(finalScreen);
-    }
-
-    async function restartExperiment() {
-      showScreen(introScreen);
-      await requestWakeLock();
     }
 
     startBtn.addEventListener("click", startExperiment);
